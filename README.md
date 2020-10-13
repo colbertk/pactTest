@@ -156,7 +156,7 @@ public class ClientTest {
 Let's run this spec and see it all pass:
 
 ```console
-$ ./gradlew :consumer:check
+$ .consumer:check/gradlew :
 
 BUILD SUCCESSFUL in 0s
 3 actionable tasks: 3 up-to-date

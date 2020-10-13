@@ -20,15 +20,15 @@ import static org.hamcrest.Matchers.is;
 
 public class ClientPactTest {
 
-  // This sets up a mock server that pretends to be our provider
+  // This sets up a mock server that pretends to be The Exchange
   @Rule
-  public PactProviderRule provider = new PactProviderRule("Our Provider", this);
+  public PactProviderRule provider = new PactProviderRule("The Exchange", this);
 
   private LocalDateTime dateTime;
   private String dateResult;
 
   // This defines the expected interaction for out test
-  @Pact(provider = "Our Provider", consumer = "Our Little Consumer")
+  @Pact(provider = "The Exchange", consumer = "Our Consumer")
   public RequestResponsePact pact(PactDslWithProvider builder) {
     dateTime = LocalDateTime.now();
     dateResult = "2013-08-16T15:31:20+10:00";
@@ -36,30 +36,25 @@ public class ClientPactTest {
       .given("data count > 0")
       .uponReceiving("a request for json data")
       .path("/provider.json")
-      .method("GET")
-      .query("validDate=" + dateTime.toString())
+      .method("POST")
+      .query("lib=" + "prebid")
       .willRespondWith()
       .status(200)
-      .body(
-          new PactDslJsonBody()
-              .stringValue("test", "NO")
-              .stringValue("date", dateResult)
-              .numberValue("count", 100)
-      )
+      .body( "{\"bids\":[{\"imp_id\":\"0\"}]}")
       .toPact();
   }
 
   @Test
-  @PactVerification("Our Provider")
+  @PactVerification("The Exchange")
   public void pactWithOurProvider() throws UnirestException {
     // Set up our HTTP client class
-    Client client = new Client(provider.getUrl());
+    SupplierClient client = new SupplierClient(provider.getUrl());
 
     // Invoke out client
     List<Object> result = client.fetchAndProcessData(dateTime);
 
-    assertThat(result, hasSize(2));
-    assertThat(result.get(0), is(1));
-    assertThat(result.get(1), is(ZonedDateTime.parse(dateResult)));
+    assertThat(result, hasSize(1));
+    // assertThat(result.get(0), is(1));
+    // assertThat(result.get(1), is(ZonedDateTime.parse(dateResult)));
   }
 }
